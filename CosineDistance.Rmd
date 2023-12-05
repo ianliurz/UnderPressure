@@ -1,3 +1,7 @@
+---
+---
+---
+
 # Compare Dissimilarity of Manifestos
 
 First, we extract the manifestos for four countries: Greece, Italy, Ireland and Sweden under specified three timestamps.
@@ -97,9 +101,9 @@ We store the result in a data frame and visualise the result.
 library(tidyverse)
 # Create a dataframe
 df <- tibble(
-  Country = c("Ireland", "Italy", "Greece"),
-  ManifestoDisimilarityOne = c(ir_1_2, ita_1_2, gre_1_2),
-  ManifestoDisimilarityTwo = c(ir_2_3, ita_2_3, gre_2_3)
+  Country = c("Ireland", "Italy", "Sweden"),
+  ManifestoDisimilarityOne = c(ir_1_2, ita_1_2, swe_1_2),
+  ManifestoDisimilarityTwo = c(ir_2_3, ita_2_3, swe_2_3)
 )
 
 df <- df |> pivot_longer(cols = -Country, names_to = "ManifestoTimeStamp", values_to = "DisimilarityValue")
@@ -115,3 +119,7 @@ ggplot(df, aes(x = ManifestoTimeStamp, y = DisimilarityValue, fill = Country)) +
   theme(plot.title = element_text(size = 12))
 
 ```
+
+A cosine distance between two corpus measures the similarity based on the cosine of the angle between the two corpus vectors.
+
+Cosine distance ranges from 0 to 1, with 0 indicating that the two corpus are perfectly similar and 1 indicating that the two corpus are perfectly dissimilar. Lower cosine distance suggests higher similarity and higher cosine distance suggests greater dissimilarity.
