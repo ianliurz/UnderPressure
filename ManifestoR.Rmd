@@ -1,7 +1,117 @@
+# Compare Dissimilarity of Manifestos
+
+First, we extract the manifestos for four countries: Greece, Italy, Ireland and Sweden under specified three timestamps.
+
 ```{r message=FALSE}
 # install.packages("manifestoR")
+# install.packages("textTinyR")
+library(textTinyR)
 library(manifestoR)
 library(tidyverse)
+library(tm)
 
-manisfesto_data <- read_csv("MPDataset_MPDS2023a.csv")
+# import api key
+mp_setapikey("manifesto_apikey.txt")
+
+# call function to access required corpus
+corpus_ir_1st <- mp_corpus(countryname == "Ireland" & edate > as.Date("2007-05-01") & edate < as.Date("2007-05-31"))
+corpus_ir_2nd <- mp_corpus(countryname == "Ireland" & edate > as.Date("2011-02-01") & edate < as.Date("2011-02-28"))
+corpus_ir_3rd <- mp_corpus(countryname == "Ireland" & edate > as.Date("2016-02-01") & edate < as.Date("2016-02-29"))
+
+corpus_swe_1st <- mp_corpus(countryname == "Sweden" & edate > as.Date("2006-09-01") & edate < as.Date("2006-09-30"))
+corpus_swe_2nd <- mp_corpus(countryname == "Sweden" & edate > as.Date("2010-01-01") & edate < as.Date("2010-09-30"))
+corpus_swe_3rd <- mp_corpus(countryname == "Sweden" & edate > as.Date("2018-09-01") & edate < as.Date("2018-09-30"))
+
+corpus_gre_1st <- mp_corpus(countryname == "Greece" & edate > as.Date("2007-09-01") & edate < as.Date("2007-09-30"))
+corpus_gre_2nd <- mp_corpus(countryname == "Greece" & edate > as.Date("2009-10-01") & edate < as.Date("2009-10-31"))
+corpus_gre_3rd <- mp_corpus(countryname == "Greece" & edate > as.Date("2015-09-01") & edate < as.Date("2015-09-30"))
+
+corpus_it_1st <- mp_corpus(countryname == "Italy" & edate > as.Date("2006-04-01") & edate < as.Date("2006-04-30"))
+corpus_it_2nd <- mp_corpus(countryname == "Italy" & edate > as.Date("2013-02-01") & edate < as.Date("2013-02-28"))
+corpus_it_3rd <- mp_corpus(countryname == "Italy" & edate > as.Date("2018-03-01") & edate < as.Date("2018-03-31"))
+
+
+```
+
+Then we flatten each tm corpus to form a single character string and perform the following text processing:
+
+1.  remove punctuations
+2.  remove line breaks
+3.  remove digits
+4.  remove stop words of corresponding languages
+5.  perform stemming based on the corresponding language
+
+Then we calculate the cosine distance between corpus.
+
+```{r message=FALSE}
+library(SnowballC)
+
+# a function to process a corpus for consine distance calculation
+
+preprocess <- function(corpus, stop_words_lang, stem_lang) {
+  all_text <- sapply(corpus, as.character)
+  single_doc <- paste(all_text, collapse = " ")
+  single_doc <- tolower(single_doc)
+  single_doc <- gsub("[[:punct:]]", "", single_doc)
+  single_doc <- gsub("\n", "", single_doc)
+  single_doc <- gsub("\\d", "", single_doc)
+  single_doc <- removeWords(single_doc, stopwords::stopwords(stop_words_lang))
+  words <- unlist(strsplit(single_doc, "\\s+"))
+  stemmed <- wordStem(words, language = stem_lang)
+  single_doc <- paste(stemmed, collapse = " ")
+  return(single_doc)
+}
+
+ir_1 <- preprocess(corpus_ir_1st, "english", "en")
+ir_2 <- preprocess(corpus_ir_2nd, "english", "en")
+ir_3 <- preprocess(corpus_ir_3rd, "english", "en")
+
+swe_1 <- preprocess(corpus_swe_1st, "swedish", "swedish")
+swe_2 <- preprocess(corpus_swe_2nd, "swedish", "swedish")
+swe_3 <- preprocess(corpus_swe_3rd, "swedish", "swedish")
+
+gre_1 <- preprocess(corpus_gre_1st, "greek", "greek")
+gre_2 <- preprocess(corpus_gre_2nd, "greek", "greek")
+gre_3 <- preprocess(corpus_gre_3rd, "greek", "greek")
+
+ita_1 <- preprocess(corpus_it_1st, "italian", "italian")
+ita_2 <- preprocess(corpus_it_2nd, "italian", "italian")
+ita_3 <- preprocess(corpus_it_3rd, "italian", "italian")
+
+ir_1_2 <- cosine_distance(ir_1, ir_2)
+ir_2_3 <- cosine_distance(ir_2, ir_3)
+
+swe_1_2 <- cosine_distance(swe_1, swe_2)
+swe_2_3 <- cosine_distance(swe_2, swe_3)
+
+gre_1_2 <- cosine_distance(gre_1, gre_2)
+gre_2_3 <- cosine_distance(gre_2, gre_3)
+
+ita_1_2 <- cosine_distance(ita_1, ita_2)
+ita_2_3 <- cosine_distance(ita_2, ita_3)
+```
+
+We store the result in a data frame and visualise the result.
+
+```{r}
+library(tidyverse)
+# Create a dataframe
+df <- tibble(
+  Country = c("Ireland", "Italy", "Greece", "Sweden"),
+  ManifestoDisimilarityOne = c(ir_1_2, ita_1_2, gre_1_2, swe_1_2),
+  ManifestoDisimilarityTwo = c(ir_2_3, ita_2_3, gre_2_3, swe_2_3),
+)
+
+df <- df |> pivot_longer(cols = -Country, names_to = "ManifestoTimeStamp", values_to = "DisimilarityValue")
+```
+
+```{r}
+ggplot(df, aes(x = ManifestoTimeStamp, y = DisimilarityValue, fill = Country)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.7) +
+  labs(title = "Manifesto Disimilarity Across Three TimeStamps in 4 European Countries",
+       x = "Time Stamps for Manifestos",
+       y = "Dissimilarity Value") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 12))
+
 ```
