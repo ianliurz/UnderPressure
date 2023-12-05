@@ -4,9 +4,29 @@ library(dplyr)
 library(ggplot2)
 library(ggrepel)
 manifesto_data <- read_csv("MPDataset_MPDS2023a.csv")
+```
+### Goal: 
+To investigate the effect of (successive) crises on nationalist sentiment in party manifestos in European Union member countries
 
-manifesto_data
+### Problem and Significance
 
+In times of crisis, populist parties especially react with nationalist rhetoric to gain voters. In the European Union, this manifests in the form of advocating for less cooperation on the European level or even arguing for leaving the European Union altogether. Mainstream parties may try to incorporate more nationalist rhetoric in their party manifestos as well as a result, and so if crises cause a rise in nationalism across the political spectrum, times of crisis should give concern that European cooperation could decrease in times when is needed the most.
+
+Successive crises have become an increasing point of concern especially in recent years (for example, COVID-19, Inflation and the war in Ukraine). Thus, having insight into whether and under which circumstances parties will react to these crises with increased nationalism is more important than ever, especially since Euro-sceptic, nationalist parties are forming governments and gaining seats in an increasing number of member states.
+
+### Chosen cases: 
+We chose **Euro crisis** and **Refugee Crisis** as most recent instances of successive crises that the Manifesto Project offered data for.
+
+To differentiate between the effects of these two crises as well as their interaction effect, we chose to compare one country that experienced major struggles due to both (Greece), and two countries that only experienced one of the two (Ireland for the Euro crisis, Sweden for the refugee crisis).
+
+**Greece**: was one of the countries hit hardest during the Euro crisis and as a Mediterranean state is also one of the member states that are the first point of contact for refugees when they arrive in the EU
+
+**Ireland**: was impacted by Euro crisis but is not part of the Relocation Agreement of the EU and is therefore a rare case of a country that experienced major effects of the Euro crisis but was not affected by the refugee crisis as much as most other member states
+
+**Sweden**: was not affected by Euro crisis as it is not in the Euro zone but had the highest number of refugees per capita during the refugee crisis
+
+First country of comparison, Sweden:
+```{r}
 # data extraction for Sweden
 sweden_desired_dates <- c(200609, 201409, 201809)
 sweden_filtered_data <- manifesto_data %>%
@@ -15,7 +35,37 @@ sweden_filtered_data <- manifesto_data %>%
   mutate(seat_ratio = absseat/totseats)
 sweden_filtered_data
 
-# data extraction for Greece
+# bubble plot for Sweden
+ggplot(sweden_filtered_data, aes(x = rile, y = per601, size = seat_ratio, color = as.factor(date))) + 
+    geom_point(alpha = 0.5) +
+    scale_size_continuous(range = c(5, 25),
+                          name = "Relative number of seats in parliament") +  # Enlarge the range for bubble sizes
+    scale_color_discrete(
+    name = "Timestamp",  # Adjust the color legend title
+    labels = c(
+      "Before Euro Crisis", "Between Euro Crisis and Refugee Crisis", "After Refugee Crisis")  # Adjust the color legend
+    ) +
+    labs(
+        title = "Sweden Party Analysis Over Time", 
+        x = "Left-Right Alignment", 
+        y = "Positive Nationalism share of quasi sentences", 
+        color = "Manifesto Time",
+        size = "Seat Ratio"
+    ) +
+    theme_minimal() +
+    theme(legend.position = "right", 
+          plot.title.position = "plot", 
+          plot.background = element_rect(fill = "white")) + 
+    guides(color = guide_legend(title = "Timestamp"), size = guide_legend(title = "Seat Ratio")) +
+    theme(plot.title = element_text(hjust = 0.5))
+
+# Save the plot with increased width for better label fit
+ggsave("swedish_party_analysis_wide.png", width = 14, height = 8)
+```
+
+Second country of comparison, Italy:
+```{r}
+# data extraction for Italy
 italy_desired_dates <- c(200604, 201302, 201803)
 italy_filtered_data <- manifesto_data %>%
   filter(countryname == "Italy", date %in% greece_desired_dates) %>%
@@ -23,110 +73,68 @@ italy_filtered_data <- manifesto_data %>%
   mutate(seat_ratio = absseat/totseats)
 italy_filtered_data
 
+# bubble plot for Italy
+ggplot(italy_filtered_data, aes(x = rile, y = per601, size = seat_ratio, color = as.factor(date))) + 
+    geom_point(alpha = 0.5) +
+    scale_size_continuous(range = c(5, 25)) +  # Enlarge the range for bubble sizes
+    scale_color_discrete(
+    name = "Timestamp",  # Adjust the color legend title
+    labels = c(
+      "Before Euro Crisis", "Between Euro Crisis and Refugee Crisis", "After Refugee Crisis")  # Adjust the color legend
+    ) +
+    labs(
+        title = "Italy Party Analysis Over Time", 
+        x = "Left-Right Alignment", 
+        y = "Positive Nationalism share of quasi sentences", 
+        color = "Manifesto Time",
+        size = "Seat Ratio"
+    ) +
+    theme_minimal() +
+    theme(legend.position = "right", 
+          plot.title.position = "plot", 
+          plot.background = element_rect(fill = "white")) + 
+    guides(color = guide_legend(title = "Timestamp"), size = guide_legend(title = "Seat Ratio")) +
+    theme(plot.title = element_text(hjust = 0.5))
+
+# Save the plot with increased width for better label fit
+ggsave("italy_party_analysis_wide.png", width = 14, height = 8)
+```
+
+Third country of comparison, Ireland:
+```{r}
 # data extraction for Ireland
 ireland_desired_dates <- c(200705, 201102, 201602)
 ireland_filtered_data <- manifesto_data %>%
   filter(countryname == "Ireland", date %in% ireland_desired_dates) %>%
   select(partyname,date,per601,rile,absseat,totseats) %>%
-  mutate(seat_ratio = absseat/totseats) #%>%
-  #na.omit() # omit rows with NA values
+  mutate(seat_ratio = absseat/totseats) %>%
+  na.omit() # omit rows with NA values
 ireland_filtered_data
 
 # Socialist party was omitted for Ireland in 2011 because of missing number of seats
 
-# bubble plot for Sweden
-ggplot(sweden_filtered_data, aes(x = rile, y = per601, size = seat_ratio, color = as.factor(date))) + 
-    geom_point(alpha = 0.5) +
-    scale_size_continuous(range = c(5, 25)) +  # Enlarge the range for bubble sizes
-    geom_text_repel(
-        aes(label = partyname), 
-        fontface = "bold",
-        max.overlaps = Inf,
-        point.padding = 0.5,
-        size = 3,
-        na.rm = TRUE,
-        box.padding = 0.35,   # Adjust the space around the labels
-        force = 1             # Adjust the repulsion force
-    ) +
-    labs(
-        title = "Swedish Party Analysis Over Time", 
-        x = "Rile Index", 
-        y = "Per601 Measure", 
-        color = "Manifesto Time",
-        size = "Seat Ratio"
-    ) +
-    theme_minimal() +
-    theme(legend.position = "right") +
-    guides(color = guide_legend(title = "Manifesto Time"), size = guide_legend(title = "Seat Ratio"))
-
-# Save the plot with increased width for better label fit
-ggsave("swedish_party_analysis_wide.png", width = 14, height = 8)
-
-# bubble plot for Italy
-ggplot(italy_filtered_data, aes(x = rile, y = per601, size = seat_ratio, color = as.factor(date))) + 
-    geom_point(alpha = 0.5) +
-    scale_size_continuous(range = c(5, 25)) +  # Enlarge the range for bubble sizes
-    geom_text_repel(
-        aes(label = partyname), 
-        fontface = "bold",
-        max.overlaps = Inf,
-        point.padding = 0.5,
-        size = 3,
-        na.rm = TRUE,
-        box.padding = 0.35,   # Adjust the space around the labels
-        force = 1             # Adjust the repulsion force
-    ) +
-    labs(
-        title = "Italy Party Analysis Over Time", 
-        x = "Left-Right Alignment", 
-        y = "Per601 Measure", 
-        color = "Timestamp",
-        size = "Seat Ratio"
-    ) +
-    theme_minimal() +
-    theme(legend.position = "right") +
-    guides(color = guide_legend(title = "Manifesto Time"), size = guide_legend(title = "Seat Ratio"))
-
-# Save the plot with increased width for better label fit
-ggsave("italy_party_analysis_wide.png", width = 14, height = 8)
-
 # bubble plot for Ireland
 ggplot(ireland_filtered_data, aes(x = rile, y = per601, size = seat_ratio, color = as.factor(date))) + 
     geom_point(alpha = 0.5) +
-    geom_text_repel(
-        aes(label = partyname), 
-        fontface = "bold",
-        max.overlaps = Inf,
-        point.padding = 5, # adjust space between data points
-        size = 3,
-        na.rm = TRUE,
-        box.padding = 0.5,   # Adjust the space around the labels
-        force = 1.5, # Preventing labels from overlapping
-        color = "black"
-    ) +
-    labs(
-        title = "Ireland Party Analysis Over Time", 
-        x = "Left-Right Alignment", 
-        y = "Positive Nationalism share of quasi-sentences", 
-        color = "Manifesto Time",
-        size = "Seat Ratio"
-    ) +
-    scale_size_continuous(range = c(5, 25)) +
+    scale_size_continuous(range = c(5, 25)) +  # Enlarge the range for bubble sizes
     scale_color_discrete(
     name = "Timestamp",  # Adjust the color legend title
     labels = c(
       "Before Euro Crisis", "Between Euro Crisis and Refugee Crisis", "After Refugee Crisis")  # Adjust the color legend
-    )
+    ) +
+    labs(
+        title = "Ireland Party Analysis Over Time", 
+        x = "Left-Right Alignment", 
+        y = "Positive Nationalism share of quasi sentences", 
+        color = "Manifesto Time",
+        size = "Seat Ratio"
+    ) +
     theme_minimal() +
-    theme(
-    legend.position = "right",
-    panel.grid = element_blank(),
-    plot.title = element_text(hjust = 0.5),  # Center the plot title
-    plot.background = element_rect(fill = "white"),
-    legend.background = element_blank(),
-    legend.box.background = element_blank(),
-    legend.title.align = 0.5  # Center the legend title
-    )
+    theme(legend.position = "right", 
+          plot.title.position = "plot", 
+          plot.background = element_rect(fill = "white")) + 
+    guides(color = guide_legend(title = "Timestamp"), size = guide_legend(title = "Seat Ratio")) +
+    theme(plot.title = element_text(hjust = 0.5))
 
 # Save the plot with increased width for better label fit
 ggsave("ireland_party_analysis_wide.png", width = 14, height = 8)
