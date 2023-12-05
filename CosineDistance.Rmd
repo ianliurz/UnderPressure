@@ -2,7 +2,7 @@
 
 First, we extract the manifestos for four countries: Greece, Italy, Ireland and Sweden under specified three timestamps.
 
-```{r message=FALSE}
+```{r message=FALSE, warning=FALSE}
 # install.packages("manifestoR")
 # install.packages("textTinyR")
 library(textTinyR)
@@ -43,7 +43,7 @@ Then we flatten each tm corpus to form a single character string and perform the
 
 Then we calculate the cosine distance between corpus.
 
-```{r message=FALSE}
+```{r message=FALSE, warning=FALSE}
 library(SnowballC)
 
 # a function to process a corpus for consine distance calculation
@@ -93,19 +93,19 @@ ita_2_3 <- cosine_distance(ita_2, ita_3)
 
 We store the result in a data frame and visualise the result.
 
-```{r}
+```{r warning=FALSE}
 library(tidyverse)
 # Create a dataframe
 df <- tibble(
-  Country = c("Ireland", "Italy", "Greece", "Sweden"),
-  ManifestoDisimilarityOne = c(ir_1_2, ita_1_2, gre_1_2, swe_1_2),
-  ManifestoDisimilarityTwo = c(ir_2_3, ita_2_3, gre_2_3, swe_2_3),
+  Country = c("Ireland", "Italy", "Greece"),
+  ManifestoDisimilarityOne = c(ir_1_2, ita_1_2, gre_1_2),
+  ManifestoDisimilarityTwo = c(ir_2_3, ita_2_3, gre_2_3)
 )
 
 df <- df |> pivot_longer(cols = -Country, names_to = "ManifestoTimeStamp", values_to = "DisimilarityValue")
 ```
 
-```{r}
+```{r warning=FALSE}
 ggplot(df, aes(x = ManifestoTimeStamp, y = DisimilarityValue, fill = Country)) +
   geom_bar(stat = "identity", position = "dodge", width = 0.7) +
   labs(title = "Manifesto Disimilarity Across Three TimeStamps in 4 European Countries",
