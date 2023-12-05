@@ -123,3 +123,5 @@ ggplot(df, aes(x = ManifestoTimeStamp, y = DisimilarityValue, fill = Country)) +
 A cosine distance between two corpus measures the similarity based on the cosine of the angle between the two corpus vectors.
 
 Cosine distance ranges from 0 to 1, with 0 indicating that the two corpus are perfectly similar and 1 indicating that the two corpus are perfectly dissimilar. Lower cosine distance suggests higher similarity and higher cosine distance suggests greater dissimilarity.
+
+The data indicates notable shifts in the political manifestos of both Ireland and Sweden following the euro crisis. Unfortunately, the analysis for Italy is incomplete for the initial timestamp due to the absence of corpus data. Subsequent to the refugee crisis, both Ireland and Sweden display consistent levels of dissimilarity, suggesting a maintained divergence in their political manifestos from the earlier period. Once the data for Italy becomes accessible at the second timestamp, there is a discernible dissimilarity in its political manifestos as well, aligning with the trends observed in the other two countries and our assumptions.
