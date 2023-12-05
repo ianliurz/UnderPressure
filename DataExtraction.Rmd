@@ -1,0 +1,89 @@
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(ggrepel)
+manifesto_data <- read_csv("MPDataset_MPDS2023a.csv")
+# data extraction for Sweden
+sweden_desired_dates <- c(200609, 201409, 201809)
+sweden_filtered_data <- manifesto_data %>%
+  filter(countryname == "Sweden", date %in% sweden_desired_dates) %>%
+  select(partyname,date,per601,rile,absseat,totseats) %>%
+  mutate(seat_ratio = absseat/totseats)
+sweden_filtered_data
+
+# data extraction for Greece
+greece_desired_dates <- c(200709, 200910, 201509)
+greece_filtered_data <- manifesto_data %>%
+  filter(countryname == "Greece", date %in% greece_desired_dates) %>%
+  select(partyname,date,per601,rile,absseat,totseats) %>%
+  mutate(seat_ratio = absseat/totseats) %>%
+  na.omit() # omit rows with NA values
+greece_filtered_data
+
+# data extraction for Ireland
+ireland_desired_dates <- c(200705, 201102, 201602)
+ireland_filtered_data <- manifesto_data %>%
+  filter(countryname == "Ireland", date %in% ireland_desired_dates) %>%
+  select(partyname,date,per601,rile,absseat,totseats) %>%
+  mutate(seat_ratio = absseat/totseats) %>%
+  na.omit() # omit rows with NA values
+ireland_filtered_data
+
+# bubble plot for Sweden
+ggplot(sweden_filtered_data, aes(x = rile, y = per601, size = seat_ratio, color = as.factor(date))) + 
+    geom_point(alpha = 0.5) +
+    scale_size_continuous(range = c(5, 25)) +  # Enlarge the range for bubble sizes
+    geom_text_repel(
+        aes(label = partyname), 
+        fontface = "bold",
+        max.overlaps = Inf,
+        point.padding = 0.5,
+        size = 3,
+        na.rm = TRUE,
+        box.padding = 0.35,   # Adjust the space around the labels
+        force = 1             # Adjust the repulsion force
+    ) +
+    labs(
+        title = "Swedish Party Analysis Over Time", 
+        x = "Rile Index", 
+        y = "Per601 Measure", 
+        color = "Manifesto Time",
+        size = "Seat Ratio"
+    ) +
+    theme_minimal() +
+    theme(legend.position = "right") +
+    guides(color = guide_legend(title = "Manifesto Time"), size = guide_legend(title = "Seat Ratio"))
+
+# Save the plot with increased width for better label fit
+ggsave("swedish_party_analysis_wide.png", width = 14, height = 8)
+
+# bubble plot for Greece
+ggplot(greece_filtered_data, aes(x = rile, y = per601, size = seat_ratio, color = as.factor(date))) + 
+    geom_point(alpha = 0.5) +
+    scale_size_continuous(range = c(5, 25)) +  # Enlarge the range for bubble sizes
+    geom_text_repel(
+        aes(label = partyname), 
+        fontface = "bold",
+        max.overlaps = Inf,
+        point.padding = 0.5,
+        size = 3,
+        na.rm = TRUE,
+        box.padding = 0.35,   # Adjust the space around the labels
+        force = 1             # Adjust the repulsion force
+    ) +
+    labs(
+        title = "Greek Party Analysis Over Time", 
+        x = "Rile Index", 
+        y = "Per601 Measure", 
+        color = "Manifesto Time",
+        size = "Seat Ratio"
+    ) +
+    theme_minimal() +
+    theme(legend.position = "right") +
+    guides(color = guide_legend(title = "Manifesto Time"), size = guide_legend(title = "Seat Ratio"))
+
+# Save the plot with increased width for better label fit
+ggsave("greece_party_analysis_wide.png", width = 14, height = 8)
+
+```
