@@ -19,14 +19,17 @@ We chose **Euro crisis** and **Refugee Crisis** as most recent instances of succ
 
 To differentiate between the effects of these two crises as well as their interaction effect, we chose to compare one country that experienced major struggles due to both (Greece), and two countries that only experienced one of the two (Ireland for the Euro crisis, Sweden for the refugee crisis).
 
-**Greece**: was one of the countries hit hardest during the Euro crisis and as a Mediterranean state is also one of the member states that are the first point of contact for refugees when they arrive in the EU
+**Italy**: was one of the countries hit hardest during the Euro crisis and as a Mediterranean state is also one of the member states that are the first point of contact for refugees when they arrive in the EU
 
 **Ireland**: was impacted by Euro crisis but is not part of the Relocation Agreement of the EU and is therefore a rare case of a country that experienced major effects of the Euro crisis but was not affected by the refugee crisis as much as most other member states
 
 **Sweden**: was not affected by Euro crisis as it is not in the Euro zone but had the highest number of refugees per capita during the refugee crisis
 
+### Time stamps:
+For each country, three time stamps were chosen from which all available party manifestos were used for analysis. These time stamps were chosen according to the following criteria: The **first time stamp** marks the last manifesto available before the Euro crisis started to measure the base level of national sentiment in the manifestos, which is either in 2006 or 2007. The **second time stamp** was chosen to best reflect the effect of the Euro crisis, which means the first available manifesto after the start of the Euro crisis was used. The **third time stamp** is the first available manifesto after the onset of the refugee crisis, either 2018 or 2016 in our cases. The exact time stamps differ between the countries since publishing date of the manifestos depends on the date of national election.
+
 First country of comparison, Sweden:
-```{r}
+```{r, eval = FALSE}
 # data extraction for Sweden
 sweden_desired_dates <- c(200609, 201409, 201809)
 sweden_filtered_data <- manifesto_data %>%
@@ -60,17 +63,22 @@ ggplot(sweden_filtered_data, aes(x = rile, y = per601, size = seat_ratio, color 
     theme(plot.title = element_text(hjust = 0.5))
 
 # Save the plot with increased width for better label fit
-ggsave("swedish_party_analysis_wide.png", width = 14, height = 8)
+ggsave("sweden_party_analysis_wide.png", width = 14, height = 8)
 ```
+![Sweden Party Analysis Over Time](sweden_party_analysis_wide.png)
+
+**Interpretation**: Prior to the onset of the euro and refugee crises, the prevalence of positive nationalism in Sweden's party manifestos, as represented in quasi sentences, was relatively minimal. Interestingly, in the aftermath of the euro crisis, an increase in the expression of positive nationalism became evident, although Sweden was not severly affected by the euro crisis. This trend was further amplified following the refugee crisis, indicating a significant surge in the affirmative references to nationalism within the political narrative.
+
 
 Second country of comparison, Italy:
-```{r}
+```{r, eval = FALSE}
 # data extraction for Italy
 italy_desired_dates <- c(200604, 201302, 201803)
 italy_filtered_data <- manifesto_data %>%
-  filter(countryname == "Italy", date %in% greece_desired_dates) %>%
+  filter(countryname == "Italy", date %in% italy_desired_dates) %>%
   select(partyname,date,per601,rile,absseat,totseats, progtype) %>%
-  mutate(seat_ratio = absseat/totseats)
+  mutate(seat_ratio = absseat/totseats) %>%
+  na.omit() # omit rows with NA values
 italy_filtered_data
 
 # bubble plot for Italy
@@ -99,9 +107,13 @@ ggplot(italy_filtered_data, aes(x = rile, y = per601, size = seat_ratio, color =
 # Save the plot with increased width for better label fit
 ggsave("italy_party_analysis_wide.png", width = 14, height = 8)
 ```
+![Italy Party Analysis Over Time](italy_party_analysis_wide.png)
+
+**Interpretation**: In Italy, the discussion of positive nationalism within party manifestos has shown a notable evolution over time. Before the euro crisis, such expressions were almost non-existent, except for some extreme right parties. However, a gradual increase in positive nationalism references is observed between the euro crisis and the refugee crisis, even for some central-right parties. This uptick becomes even more pronounced after the refugee crisis, suggesting a shift towards more frequently mentioning nationalism in a positive light by Italian political parties.
+
 
 Third country of comparison, Ireland:
-```{r}
+```{r, eval = FALSE}
 # data extraction for Ireland
 ireland_desired_dates <- c(200705, 201102, 201602)
 ireland_filtered_data <- manifesto_data %>%
@@ -140,3 +152,7 @@ ggplot(ireland_filtered_data, aes(x = rile, y = per601, size = seat_ratio, color
 ggsave("ireland_party_analysis_wide.png", width = 14, height = 8)
 
 ```
+![Ireland Party Analysis Over Time](ireland_party_analysis_wide.png)
+
+**Interpretation**: The data indicates that positive nationalism was already a topic of some discussion in Irish political narratives before the crises. However, following the euro crisis, there's a noticeable shift with more parties leaning towards the right. After the refugee crisis, we observe a significant move to the extreme-right by one party. Despite these shifts in political positioning, the overall mentions of positive nationalism in party manifestos do not show a drastic increase. This could suggest that Ireland's experience with the refugee crisis didn't profoundly alter the prevalence of positive nationalism in party rhetoric as compared to other factors.
+
